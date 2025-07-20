@@ -1,13 +1,16 @@
 import os
 import logging
+from gigachat.exceptions import ResponseError
 from dotenv import load_dotenv
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMarkup, Update, ReplyKeyboardRemove
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import (
     ApplicationBuilder, CommandHandler, MessageHandler, filters,
     ContextTypes, ConversationHandler, CallbackQueryHandler
 )
 
 from ai import GigaChatClient
+from files.pdf_embedder import PdfEmbedder
+from files.transfer_file_to_embeddings import transfer_file_to_embeddings
 
 # Загрузка переменных окружения
 load_dotenv()
@@ -16,6 +19,8 @@ TELEGRAM_API_TOKEN = os.getenv("TELEGRAM_API_TOKEN")
 logging.basicConfig(level=logging.INFO)
 
 client = GigaChatClient()
+
+pdf_embedder = PdfEmbedder()
 
 # Состояния ConversationHandler
 WAITING_QUESTION_OR_FILE = 1
@@ -27,6 +32,10 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     return WAITING_QUESTION_OR_FILE
 
 async def load_pdf(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    document = update.message.document
+    file = await context.bot.get_file(document.file_id)
+    file_path = f"{document.file_name}"
+    await transfer_file_to_embeddings(file=file, file_path=file_path, embedder=pdf_embedder)
     await update.message.reply_text(
         f"Файл pdf был успешно добавлен!"
     )
@@ -98,6 +107,7 @@ def main():
     app.add_handler(conv_handler)
     app.add_handler(CallbackQueryHandler(button_handler))
     app.run_polling()
+    client.close()
 
 if __name__ == '__main__':
     main()

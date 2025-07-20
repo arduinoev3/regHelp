@@ -8,22 +8,22 @@ from langchain.chains.retrieval import create_retrieval_chain
 from dotenv import load_dotenv
 import os
 
+from embeddings.get_embeddings_by_model import CURRENT_EMBEDDINGS
+
 class GigaChatClient:
     rag_chain = None
     weaviate_client = None
     def __init__(self):
         load_dotenv()
         GIGA_CHAT_TOKEN = os.getenv("GIGACHAT_API_KEY")
-
+        
         giga = GigaChat(
             credentials=GIGA_CHAT_TOKEN,
-            verify_ssl_certs=False
+            verify_ssl_certs=False,
+            max_tokens=2048
         )
 
-        embeddings = GigaChatEmbeddings(
-            credentials=GIGA_CHAT_TOKEN,
-            verify_ssl_certs=False
-        )
+        embeddings = CURRENT_EMBEDDINGS
 
         self.weaviate_client = weaviate.connect_to_local()
         vector_store = WeaviateVectorStore(
