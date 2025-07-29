@@ -1,0 +1,5 @@
+from server.embeddings.embeddings_type import EmbeddingsType
+from server.embeddings.get_embeddings_by_type import get_embeddings_by_type
+
+
+CURRENT_EMBEDDINGS = get_embeddings_by_type(EmbeddingsType.BGEM3)

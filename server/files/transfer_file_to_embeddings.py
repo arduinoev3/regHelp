@@ -1,10 +1,11 @@
 import os
 import traceback
-from telegram import File
-from files.embedder import Embedder
+from files.file_embedder import FileEmbedder
+await file.download_to_drive(file_path)
+    
+async def transfer_file_to_embeddings(file_path: str):
+    embedder = FileEmbedder()
 
-async def transfer_file_to_embeddings(file: File, file_path: str, embedder: Embedder):
-    await file.download_to_drive(file_path)
     try:
         await embedder.embed_file(file_path=file_path)
     except Exception as e:
@@ -13,4 +14,3 @@ async def transfer_file_to_embeddings(file: File, file_path: str, embedder: Embe
     finally:
         if os.path.exists(file_path):
             os.remove(file_path)
-    
